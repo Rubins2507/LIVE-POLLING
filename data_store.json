@@ -1,0 +1,165 @@
+{
+  "users": [
+    {
+      "id": "usr_rubin",
+      "name": "Rubin S",
+      "email": "rubin@example.com",
+      "passwordHash": "$2b$10$w38Ingn4A27P5TM887P4Au7Twm9LKhiUFrtZGjSuTUNnmBD3lpR76",
+      "createdAt": "2026-08-20T12:31:31.252Z",
+      "updatedAt": "2026-08-20T12:31:31.252Z"
+    }
+  ],
+  "polls": [
+    {
+      "id": "poll_lang_1",
+      "ownerId": "usr_rubin",
+      "question": "Which programming language do you like the most?",
+      "options": [
+        {
+          "id": "opt_py",
+          "text": "Python",
+          "voteCount": 61
+        },
+        {
+          "id": "opt_jv",
+          "text": "Java",
+          "voteCount": 40
+        },
+        {
+          "id": "opt_js",
+          "text": "JavaScript",
+          "voteCount": 19
+        },
+        {
+          "id": "opt_cpp",
+          "text": "C++",
+          "voteCount": 5
+        }
+      ],
+      "settings": {
+        "allowMultipleVotes": false,
+        "endDate": null
+      },
+      "status": "active",
+      "shareId": "abc123",
+      "createdAt": "2026-09-19T10:31:31.252Z",
+      "updatedAt": "2026-09-19T12:31:46.916Z"
+    },
+    {
+      "id": "poll_frame_2",
+      "ownerId": "usr_rubin",
+      "question": "Best framework for web development?",
+      "options": [
+        {
+          "id": "opt_react",
+          "text": "React",
+          "voteCount": 45
+        },
+        {
+          "id": "opt_next",
+          "text": "Next.js",
+          "voteCount": 25
+        },
+        {
+          "id": "opt_vue",
+          "text": "Vue.js",
+          "voteCount": 12
+        },
+        {
+          "id": "opt_angular",
+          "text": "Angular",
+          "voteCount": 7
+        }
+      ],
+      "settings": {
+        "allowMultipleVotes": false,
+        "endDate": null
+      },
+      "status": "active",
+      "shareId": "web456",
+      "createdAt": "2026-09-18T12:31:31.252Z",
+      "updatedAt": "2026-09-18T12:31:31.252Z"
+    },
+    {
+      "id": "poll_mobile_3",
+      "ownerId": "usr_rubin",
+      "question": "Your favorite mobile OS?",
+      "options": [
+        {
+          "id": "opt_ios",
+          "text": "iOS",
+          "voteCount": 32
+        },
+        {
+          "id": "opt_android",
+          "text": "Android",
+          "voteCount": 20
+        },
+        {
+          "id": "opt_other",
+          "text": "Other",
+          "voteCount": 4
+        }
+      ],
+      "settings": {
+        "allowMultipleVotes": false,
+        "endDate": null
+      },
+      "status": "closed",
+      "shareId": "mob789",
+      "createdAt": "2026-09-16T12:31:31.252Z",
+      "updatedAt": "2026-09-16T12:31:31.252Z"
+    }
+  ],
+  "votes": [
+    {
+      "id": "vt_1789821106916_fs3q",
+      "pollId": "poll_lang_1",
+      "optionId": "opt_py",
+      "voterIdentifier": "test_curl_voter_1",
+      "createdAt": "2026-09-19T12:31:46.916Z"
+    }
+  ],
+  "activities": [
+    {
+      "id": "act_1789821106916",
+      "pollId": "poll_lang_1",
+      "optionId": "opt_py",
+      "optionText": "Python",
+      "timestamp": "2026-09-19T12:31:46.916Z",
+      "relativeText": "Just now"
+    },
+    {
+      "id": "act_1",
+      "pollId": "poll_lang_1",
+      "optionId": "opt_jv",
+      "optionText": "Java",
+      "timestamp": "2026-09-19T12:31:16.252Z",
+      "relativeText": "Just now"
+    },
+    {
+      "id": "act_2",
+      "pollId": "poll_lang_1",
+      "optionId": "opt_py",
+      "optionText": "Python",
+      "timestamp": "2026-09-19T12:30:46.252Z",
+      "relativeText": "10 seconds ago"
+    },
+    {
+      "id": "act_3",
+      "pollId": "poll_lang_1",
+      "optionId": "opt_js",
+      "optionText": "JavaScript",
+      "timestamp": "2026-09-19T12:30:16.252Z",
+      "relativeText": "25 seconds ago"
+    },
+    {
+      "id": "act_4",
+      "pollId": "poll_lang_1",
+      "optionId": "opt_cpp",
+      "optionText": "C++",
+      "timestamp": "2026-09-19T12:29:31.252Z",
+      "relativeText": "1 minute ago"
+    }
+  ]
+}
