@@ -64,7 +64,10 @@ export const DonutChart: React.FC<DonutChartProps> = ({ results, totalVotes }) =
                 strokeDasharray={segment.strokeDasharray}
                 strokeDashoffset={segment.strokeDashoffset}
                 strokeLinecap="round"
-                className="transition-all duration-700 ease-out"
+                style={{
+                  transition:
+                    'stroke-dasharray 800ms cubic-bezier(0.16, 1, 0.3, 1), stroke-dashoffset 800ms cubic-bezier(0.16, 1, 0.3, 1)',
+                }}
               />
             ))
           ) : (
@@ -81,7 +84,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ results, totalVotes }) =
 
         {/* Center Text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-          <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
+          <span className="text-2xl font-extrabold text-slate-900 tracking-tight transition-all duration-300">
             {totalVotes}
           </span>
           <span className="text-xs font-medium text-slate-500">
@@ -90,24 +93,37 @@ export const DonutChart: React.FC<DonutChartProps> = ({ results, totalVotes }) =
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="flex flex-col gap-2.5 min-w-[140px]">
+      {/* Legend with smooth mini progress bars */}
+      <div className="flex flex-col gap-3 min-w-[170px] w-full sm:w-auto">
         {results.map((opt, index) => {
           const color = COLORS[index % COLORS.length];
           return (
-            <div key={opt.optionId} className="flex items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2">
-                <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: color }}
-                />
-                <span className="font-semibold text-slate-700 truncate max-w-[90px]">
-                  {opt.text}
-                </span>
+            <div key={opt.optionId} className="flex flex-col gap-1">
+              <div className="flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: color }}
+                  />
+                  <span className="font-semibold text-slate-700 truncate max-w-[110px]" title={opt.text}>
+                    {opt.text}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 font-medium text-slate-500 shrink-0">
+                  <span className="text-slate-900 font-bold">{opt.percentage}%</span>
+                  <span>({opt.votes})</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 font-medium text-slate-500">
-                <span className="text-slate-900 font-bold">{opt.percentage}%</span>
-                <span>({opt.votes})</span>
+              {/* Subtle mini progress bar with smooth CSS expansion */}
+              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-2xs">
+                <div
+                  className="h-full rounded-full progress-bar-fill"
+                  style={{
+                    width: `${opt.percentage}%`,
+                    backgroundColor: color,
+                    willChange: 'width',
+                  }}
+                />
               </div>
             </div>
           );

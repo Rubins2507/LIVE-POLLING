@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider } from './components/Toast';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { Sidebar } from './components/Sidebar';
@@ -12,6 +13,7 @@ import { PollCreatedPage } from './pages/PollCreatedPage';
 import { PublicPollPage } from './pages/PublicPollPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
+import { ExplorePollsPage } from './pages/ExplorePollsPage';
 import { Poll } from './types';
 
 function AppContent() {
@@ -72,7 +74,9 @@ function AppContent() {
 
           {/* Dynamic Dashboard View */}
           <div className="flex-1 min-w-0 bg-slate-50">
-            {currentPath === '/dashboard' && <DashboardPage navigate={navigate} />}
+            {(currentPath === '/dashboard' || currentPath.startsWith('/dashboard#')) && (
+              <DashboardPage navigate={navigate} />
+            )}
             {currentPath === '/polls/create' && (
               <CreatePollPage
                 navigate={navigate}
@@ -86,6 +90,7 @@ function AppContent() {
       ) : (
         <main className="flex-1 flex flex-col">
           {currentPath === '/' && <LandingPage navigate={navigate} />}
+          {currentPath === '/explore' && <ExplorePollsPage navigate={navigate} />}
           {currentPath === '/signup' && <SignupPage navigate={navigate} />}
           {currentPath === '/login' && <LoginPage navigate={navigate} />}
           {isPollCreated && createdShareId && (
@@ -107,7 +112,9 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </AuthProvider>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/Toast';
 import { api } from '../services/api';
 import { Poll } from '../types';
 import {
@@ -25,6 +26,7 @@ interface DashboardPageProps {
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ navigate }) => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [polls, setPolls] = useState<Poll[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,6 +61,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ navigate }) => {
     const url = `${window.location.origin}/poll/${shareId}`;
     navigator.clipboard.writeText(url);
     setCopiedId(shareId);
+    showToast('Poll share link copied to clipboard!');
     setTimeout(() => setCopiedId(null), 2000);
     setActiveMenuId(null);
   };
@@ -68,12 +71,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ navigate }) => {
     try {
       if (poll.status === 'active') {
         await api.closePoll(poll.id);
+        showToast('Poll closed successfully');
       } else {
         await api.reopenPoll(poll.id);
+        showToast('Poll reopened for voting');
       }
       fetchPolls();
-    } catch (err) {
-      alert('Failed to change poll status');
+    } catch (err: any) {
+      showToast('Failed to change poll status: ' + err.message, 'error');
     }
     setActiveMenuId(null);
   };
@@ -83,9 +88,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ navigate }) => {
     if (confirm('Are you sure you want to delete this poll? This action cannot be undone.')) {
       try {
         await api.deletePoll(pollId);
+        showToast('Poll deleted successfully');
         fetchPolls();
-      } catch (err) {
-        alert('Failed to delete poll');
+      } catch (err: any) {
+        showToast('Failed to delete poll: ' + err.message, 'error');
       }
     }
     setActiveMenuId(null);

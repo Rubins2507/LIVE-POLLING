@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { DemoModal } from '../components/DemoModal';
 import {
   Edit3,
   BarChart3,
@@ -13,6 +14,7 @@ import {
   Users,
   Activity,
   ChevronRight,
+  Flame,
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -21,6 +23,7 @@ interface LandingPageProps {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ navigate }) => {
   const [demoVote, setDemoVote] = useState<string | null>(null);
+  const [showDemoModal, setShowDemoModal] = useState(false);
   const [demoCounts, setDemoCounts] = useState({
     Python: 60,
     Java: 40,
@@ -69,7 +72,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ navigate }) => {
               </p>
 
               {/* Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
                 <button
                   onClick={() => navigate('/signup')}
                   className="w-full sm:w-auto px-7 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 group cursor-pointer"
@@ -79,11 +82,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ navigate }) => {
                 </button>
 
                 <button
-                  onClick={() => navigate('/poll/abc123')}
+                  onClick={() => setShowDemoModal(true)}
                   className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-base rounded-xl border border-slate-200 shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Play className="w-4 h-4 text-blue-600 fill-blue-600" />
                   <span>Watch Demo</span>
+                </button>
+
+                <button
+                  onClick={() => navigate('/explore')}
+                  className="w-full sm:w-auto px-5 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Flame className="w-4 h-4 text-amber-500" />
+                  <span>Explore Polls</span>
                 </button>
               </div>
 
@@ -380,6 +391,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ navigate }) => {
           </p>
         </div>
       </section>
+      {/* Demo Modal */}
+      <DemoModal
+        isOpen={showDemoModal}
+        onClose={() => setShowDemoModal(false)}
+        navigate={navigate}
+      />
     </div>
   );
 };

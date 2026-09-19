@@ -27,3 +27,35 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Smooth progress bar width expansion transition for WebSocket updates */
+.progress-bar-fill {
+  transition: width 800ms cubic-bezier(0.16, 1, 0.3, 1), background-color 400ms ease;
+  will-change: width;
+}
+
+@keyframes subtle-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.animate-vote-pulse {
+  animation: subtle-pulse 600ms ease-out 1;
+}
+
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+.animate-sheen {
+  animation: shimmer-sweep 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}

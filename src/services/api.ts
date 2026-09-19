@@ -138,8 +138,8 @@ export const api = {
     return json.data as PollResults;
   },
 
-  async vote(pollId: string, optionId: string) {
-    const voterId = getVoterIdentifier();
+  async vote(pollId: string, optionId: string, customVoterId?: string) {
+    const voterId = customVoterId || getVoterIdentifier();
     const res = await fetch(`${API_BASE}/polls/${pollId}/vote`, {
       method: 'POST',
       headers: getAuthHeader(),

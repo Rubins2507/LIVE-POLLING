@@ -39,12 +39,18 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
         </button>
 
         {/* Center Links */}
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+        <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-600">
           <button
             onClick={() => { navigate('/'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
             className={`hover:text-blue-600 transition-colors ${currentPath === '/' ? 'text-blue-600 font-semibold' : ''}`}
           >
             Home
+          </button>
+          <button
+            onClick={() => navigate('/explore')}
+            className={`hover:text-blue-600 transition-colors ${currentPath === '/explore' ? 'text-blue-600 font-semibold' : ''}`}
+          >
+            Explore
           </button>
           <button
             onClick={() => scrollToSection('features')}
@@ -160,6 +166,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
               className="text-left px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-50"
             >
               Home
+            </button>
+            <button
+              onClick={() => { navigate('/explore'); setMobileMenuOpen(false); }}
+              className="text-left px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-50"
+            >
+              Explore Polls
             </button>
             <button
               onClick={() => scrollToSection('features')}

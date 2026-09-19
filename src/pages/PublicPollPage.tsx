@@ -5,6 +5,7 @@ import { Poll, OptionResult, ActivityEvent, WSMessage } from '../types';
 import { DonutChart } from '../components/DonutChart';
 import { LivePollLogo } from '../components/LivePollLogo';
 import { QRCodeModal } from '../components/QRCodeModal';
+import { useToast } from '../components/Toast';
 import {
   Radio,
   Users,
@@ -20,6 +21,9 @@ import {
   QrCode,
   Check,
   Activity as ActivityIcon,
+  Zap,
+  Download,
+  Copy,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -38,6 +42,7 @@ const OPTION_COLORS = [
 ];
 
 export const PublicPollPage: React.FC<PublicPollPageProps> = ({ shareId, navigate }) => {
+  const { showToast } = useToast();
   const [poll, setPoll] = useState<Poll | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +51,7 @@ export const PublicPollPage: React.FC<PublicPollPageProps> = ({ shareId, navigat
   const [votedOptionText, setVotedOptionText] = useState<string | null>(null);
   const [submittingVote, setSubmittingVote] = useState(false);
   const [voteError, setVoteError] = useState<string | null>(null);
+  const [isSimulating, setIsSimulating] = useState(false);
 
   // Live real-time state from WebSocket
   const [activeTab, setActiveTab] = useState<'results' | 'activity'>('results');
@@ -53,6 +59,53 @@ export const PublicPollPage: React.FC<PublicPollPageProps> = ({ shareId, navigat
   const [liveTotalVotes, setLiveTotalVotes] = useState<number>(0);
   const [activities, setActivities] = useState<ActivityEvent[]>([]);
   const [showQR, setShowQR] = useState(false);
+  const [recentlyUpdatedId, setRecentlyUpdatedId] = useState<string | null>(null);
+
+  // Trigger pulse highlight on recently updated option
+  const triggerOptionHighlight = (optionId: string) => {
+    setRecentlyUpdatedId(optionId);
+    setTimeout(() => {
+      setRecentlyUpdatedId((prev) => (prev === optionId ? null : prev));
+    }, 1400);
+  };
+
+  // Simulate an incoming live vote over the API to test real-time WebSocket broadcast
+  const handleSimulateLiveVote = async () => {
+    if (!poll || poll.options.length === 0) return;
+    setIsSimulating(true);
+    try {
+      const randomOption = poll.options[Math.floor(Math.random() * poll.options.length)];
+      const randomVoterId = `sim_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      const updated = await api.vote(poll.id, randomOption.id, randomVoterId);
+      triggerOptionHighlight(randomOption.id);
+      setLiveResults(updated.results);
+      setLiveTotalVotes(updated.totalVotes);
+      showToast(`Simulated live vote for "${randomOption.text}"! Check the updated live results.`);
+    } catch (e: any) {
+      showToast('Simulation failed: ' + e.message, 'error');
+    } finally {
+      setIsSimulating(false);
+    }
+  };
+
+  // Export results as CSV
+  const handleExportCSV = () => {
+    if (!poll) return;
+    const rows = [
+      ['Option', 'Votes', 'Percentage'],
+      ...liveResults.map((r) => [r.text, r.votes, `${r.percentage}%`]),
+      ['Total', liveTotalVotes, '100%'],
+    ];
+    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map((e) => e.join(',')).join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `poll_${poll.shareId || 'results'}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Poll results exported as CSV');
+  };
 
   // Check if voter already voted locally in this browser
   useEffect(() => {
@@ -108,7 +161,20 @@ export const PublicPollPage: React.FC<PublicPollPageProps> = ({ shareId, navigat
       if (typeof msg.totalVotes === 'number') setLiveTotalVotes(msg.totalVotes);
       if (msg.activities) setActivities(msg.activities);
     } else if (msg.type === 'POLL_UPDATE') {
-      if (msg.results) setLiveResults(msg.results);
+      if (msg.results) {
+        // Detect which option votes changed to trigger subtle highlight
+        setLiveResults((prev) => {
+          if (msg.results) {
+            msg.results.forEach((newOpt) => {
+              const oldOpt = prev.find((p) => p.optionId === newOpt.optionId);
+              if (oldOpt && newOpt.votes > oldOpt.votes) {
+                triggerOptionHighlight(newOpt.optionId);
+              }
+            });
+          }
+          return msg.results!;
+        });
+      }
       if (typeof msg.totalVotes === 'number') setLiveTotalVotes(msg.totalVotes);
       if (msg.activity) {
         setActivities((prev) => [msg.activity!, ...prev.slice(0, 20)]);
@@ -130,6 +196,7 @@ export const PublicPollPage: React.FC<PublicPollPageProps> = ({ shareId, navigat
       const updated = await api.vote(poll.id, selectedOptionId);
 
       setHasVoted(true);
+      triggerOptionHighlight(selectedOptionId);
       const optionName = selectedOption?.text || 'your selected option';
       setVotedOptionText(optionName);
 
@@ -200,8 +267,19 @@ export const PublicPollPage: React.FC<PublicPollPageProps> = ({ shareId, navigat
           <LivePollLogo size="sm" />
         </button>
 
-        {/* Right Header Badges (LIVE + Viewers) */}
-        <div className="flex items-center gap-3">
+        {/* Right Header Badges (LIVE + Viewers + Simulator) */}
+        <div className="flex items-center gap-2.5">
+          {/* Quick simulator tester button */}
+          <button
+            onClick={handleSimulateLiveVote}
+            disabled={isSimulating || isClosed}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 hover:bg-amber-100 disabled:opacity-50 text-amber-800 rounded-full text-xs font-semibold border border-amber-200/80 transition-colors shadow-2xs"
+            title="Simulate an incoming vote from another client"
+          >
+            <Zap className={`w-3.5 h-3.5 text-amber-600 ${isSimulating ? 'animate-spin' : ''}`} />
+            <span>{isSimulating ? 'Sending Vote...' : 'Simulate Live Vote'}</span>
+          </button>
+
           {/* LIVE indicator badge with pulsing red dot */}
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 border border-red-200/70 text-red-600 text-xs font-bold shadow-2xs">
             <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
@@ -211,12 +289,12 @@ export const PublicPollPage: React.FC<PublicPollPageProps> = ({ shareId, navigat
           {/* Viewers Counter */}
           <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-medium">
             <Users className="w-3.5 h-3.5 text-slate-500" />
-            <span>{viewers} people watching</span>
+            <span>{viewers} watching</span>
           </div>
 
           <button
             onClick={() => setShowQR(true)}
-            className="p-1.5 text-slate-500 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition-colors"
+            className="p-1.5 text-slate-500 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
             title="Show QR Code"
           >
             <QrCode className="w-4 h-4" />
@@ -290,16 +368,16 @@ export const PublicPollPage: React.FC<PublicPollPageProps> = ({ shareId, navigat
                   <div
                     key={opt.id}
                     onClick={() => canVote && setSelectedOptionId(opt.id)}
-                    className={`relative overflow-hidden p-4 rounded-xl border transition-all ${
+                    className={`relative overflow-hidden p-4 rounded-xl border transition-all duration-300 ${
                       canVote ? 'cursor-pointer' : 'cursor-default'
                     } ${
                       isSelected
                         ? 'border-blue-600 bg-blue-50/40 ring-2 ring-blue-500/20 shadow-xs'
                         : 'border-slate-200 hover:border-slate-300 bg-white'
-                    }`}
+                    } ${recentlyUpdatedId === opt.id ? 'ring-2 ring-blue-400/60 border-blue-300 bg-blue-50/20' : ''}`}
                   >
                     {/* Top row: Radio + Text + Percentage */}
-                    <div className="flex items-center justify-between gap-3 text-sm font-semibold mb-2 relative z-10">
+                    <div className="flex items-center justify-between gap-3 text-sm font-semibold mb-2.5 relative z-10">
                       <div className="flex items-center gap-3">
                         {canVote ? (
                           <div
@@ -313,19 +391,33 @@ export const PublicPollPage: React.FC<PublicPollPageProps> = ({ shareId, navigat
                         <span className="text-slate-900 font-bold">{opt.text}</span>
                       </div>
 
-                      {/* Percentage & Vote Count */}
+                      {/* Percentage & Vote Count with smooth CSS transition */}
                       <div className="flex items-center gap-2 text-xs">
-                        <span className="font-extrabold text-slate-900 text-sm">{percentage}%</span>
-                        <span className="text-slate-400 font-medium">({votes})</span>
+                        <span
+                          className={`font-extrabold text-sm transition-all duration-500 ${
+                            recentlyUpdatedId === opt.id
+                              ? 'text-blue-600 scale-110 animate-vote-pulse'
+                              : 'text-slate-900 scale-100'
+                          }`}
+                        >
+                          {percentage}%
+                        </span>
+                        <span className="text-slate-400 font-medium transition-colors">({votes})</span>
                       </div>
                     </div>
 
-                    {/* Visual Animated Progress Bar */}
-                    <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden relative z-10">
+                    {/* Visual Animated Progress Bar with smooth CSS width expansion */}
+                    <div className="w-full h-3 bg-slate-100/90 rounded-full overflow-hidden relative z-10 shadow-inner">
                       <div
-                        className={`h-full ${barColor} rounded-full transition-all duration-700 ease-out`}
-                        style={{ width: `${percentage}%` }}
-                      />
+                        className={`h-full ${barColor} rounded-full relative overflow-hidden progress-bar-fill`}
+                        style={{
+                          width: `${percentage}%`,
+                          willChange: 'width',
+                        }}
+                      >
+                        {/* Subtle flowing glossy sheen highlight */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent w-full h-full animate-sheen pointer-events-none" />
+                      </div>
                     </div>
                   </div>
                 );
@@ -417,11 +509,20 @@ export const PublicPollPage: React.FC<PublicPollPageProps> = ({ shareId, navigat
                   totalVotes={liveTotalVotes}
                 />
 
-                {/* Quick Share Box */}
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
-                  <span className="text-xs font-bold text-slate-700">
-                    Invite more voters
-                  </span>
+                {/* Quick Share and Export Box */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-700">
+                      Invite more voters
+                    </span>
+                    <button
+                      onClick={handleExportCSV}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Export CSV</span>
+                    </button>
+                  </div>
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -432,9 +533,9 @@ export const PublicPollPage: React.FC<PublicPollPageProps> = ({ shareId, navigat
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(`${window.location.origin}/poll/${shareId}`);
-                        alert('Link copied to clipboard!');
+                        showToast('Share link copied to clipboard!');
                       }}
-                      className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700"
+                      className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 cursor-pointer transition-colors"
                     >
                       Copy
                     </button>
