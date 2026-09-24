@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
+    "build:pages": "vite build --base=/LIVE-POLLING/",
     "start": "vite preview --host 0.0.0.0",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
