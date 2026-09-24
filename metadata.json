@@ -1,0 +1,6 @@
+{
+  "name": "LivePoll",
+  "description": "Real-time interactive polling platform. Create, share, and see results live with WebSocket synchronization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
