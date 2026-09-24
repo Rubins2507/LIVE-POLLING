@@ -8,3 +8,4 @@ coverage/
 data_store.json
 .env*
 !.env.example
+.copilot-azure/

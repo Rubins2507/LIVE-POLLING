@@ -26,7 +26,10 @@ export function usePollWebSocket(pollId: string | undefined, onMessage?: (msg: W
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host;
-    const wsUrl = `${protocol}//${host}/ws/polls/${pollId}`;
+    const configuredBase = (import.meta.env.VITE_WS_URL as string | undefined) || `${protocol}//${host}`;
+    const trimmedBase = configuredBase.replace(/\/+$/, '');
+    const wsBase = trimmedBase.endsWith('/ws') ? trimmedBase : `${trimmedBase}/ws`;
+    const wsUrl = `${wsBase}/polls/${pollId}`;
 
     setStatus(reconnectAttemptsRef.current > 0 ? 'reconnecting' : 'connecting');
 
