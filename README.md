@@ -125,20 +125,22 @@ The Go API backend will be accessible at `http://localhost:8080`.
 
 ## Local Development
 
-Start the required services first:
+With MongoDB and Redis installed as local services, copy the environment file and start the Go API:
 
 ```bash
-docker compose up mongodb redis backend
+copy backend\.env.example backend\.env
+cd backend
+go run ./cmd/server
 ```
 
-Then run the React development server in a second terminal:
+In a second terminal, start the React development server:
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Open `http://localhost:3000`. Vite proxies `/api` and `/ws` to Gin on port 8080, so the browser uses the same real MongoDB, Redis, and WebSocket path as the containerized frontend.
+Open the URL printed by Vite, normally `http://localhost:5173`. Vite proxies `/api` and `/ws` to Gin on port 8080, so the browser uses the local MongoDB and Redis services.
 
 ## Environment
 

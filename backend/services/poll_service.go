@@ -58,9 +58,6 @@ func (s *PollService) CreatePoll(ctx context.Context, ownerIDStr string, req mod
 		if trimmedOpt == "" {
 			return nil, fmt.Errorf("option %d cannot be empty", i+1)
 		}
-		if len(trimmedOpt) > 100 {
-			return nil, fmt.Errorf("option %d must be 100 characters or fewer", i+1)
-		}
 		if seen[strings.ToLower(trimmedOpt)] {
 			return nil, fmt.Errorf("duplicate option: '%s'", trimmedOpt)
 		}
@@ -76,13 +73,9 @@ func (s *PollService) CreatePoll(ctx context.Context, ownerIDStr string, req mod
 	var endDate *time.Time
 	if req.EndDate != "" {
 		t, err := time.Parse(time.RFC3339, req.EndDate)
-		if err != nil {
-			return nil, errors.New("end date must be a valid RFC3339 timestamp")
+		if err == nil {
+			endDate = &t
 		}
-		if !t.After(time.Now()) {
-			return nil, errors.New("end date must be in the future")
-		}
-		endDate = &t
 	}
 
 	poll := &models.Poll{
@@ -130,6 +123,25 @@ func (s *PollService) GetPollByID(ctx context.Context, pollIDStr string) (*model
 		return nil, errors.New("invalid poll ID")
 	}
 	return s.pollRepo.FindByID(ctx, pollObjID)
+}
+
+func (s *PollService) UpdatePoll(ctx context.Context, pollIDStr, ownerIDStr string, req models.UpdatePollRequest) (*models.Poll, error) {
+	poll, err := s.GetPollByID(ctx, pollIDStr)
+	if err != nil {
+		return nil, err
+	}
+	if poll.OwnerID.Hex() != ownerIDStr {
+		return nil, errors.New("unauthorized: you do not own this poll")
+	}
+
+	question := strings.TrimSpace(req.Question)
+	if len(question) < 5 || len(question) > 300 {
+		return nil, errors.New("poll question must be between 5 and 300 characters")
+	}
+	if err := s.pollRepo.UpdateQuestion(ctx, poll.ID, question); err != nil {
+		return nil, err
+	}
+	return s.GetPollByID(ctx, pollIDStr)
 }
 
 func (s *PollService) GetPollByShareID(ctx context.Context, shareID string) (*models.Poll, error) {

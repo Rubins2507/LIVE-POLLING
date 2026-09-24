@@ -184,7 +184,7 @@ export const PublicPollPage: React.FC<PublicPollPageProps> = ({ shareId, navigat
     }
   }, []);
 
-  const { status: wsStatus, viewers } = usePollWebSocket(poll?.id || shareId, handleWSMessage);
+  const { status: wsStatus, viewers } = usePollWebSocket(poll?.id, handleWSMessage);
 
   const handleVoteSubmit = async () => {
     if (!selectedOptionId || !poll) return;

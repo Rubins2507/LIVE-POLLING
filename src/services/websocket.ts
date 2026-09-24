@@ -4,7 +4,7 @@ import { WSMessage } from '../types';
 export type WSConnectionStatus = 'connecting' | 'connected' | 'reconnecting' | 'disconnected';
 
 export function usePollWebSocket(pollId: string | undefined, onMessage?: (msg: WSMessage) => void) {
-  const [status, setStatus] = useState<WSConnectionStatus>('connecting');
+  const [status, setStatus] = useState<WSConnectionStatus>(pollId ? 'connecting' : 'disconnected');
   const [viewers, setViewers] = useState<number>(0);
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -14,7 +14,10 @@ export function usePollWebSocket(pollId: string | undefined, onMessage?: (msg: W
   onMessageRef.current = onMessage;
 
   const connect = useCallback(() => {
-    if (!pollId) return;
+    if (!pollId) {
+      setStatus('disconnected');
+      return;
+    }
 
     if (socketRef.current) {
       socketRef.current.close();

@@ -76,6 +76,15 @@ func (h *Hub) Run() {
 	}
 }
 
+func (h *Hub) broadcastViewerCount(pollID string, count int) {
+	msg, _ := json.Marshal(map[string]interface{}{
+		"type":    "VIEWER_COUNT",
+		"pollId":  pollID,
+		"viewers": count,
+	})
+	h.sendToRoom(pollID, msg)
+}
+
 func (h *Hub) sendToRoom(pollID string, message []byte) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -89,15 +98,6 @@ func (h *Hub) sendToRoom(pollID string, message []byte) {
 			delete(clients, client)
 		}
 	}
-}
-
-func (h *Hub) broadcastViewerCount(pollID string, count int) {
-	msg, _ := json.Marshal(map[string]interface{}{
-		"type":    "VIEWER_COUNT",
-		"pollId":  pollID,
-		"viewers": count,
-	})
-	h.sendToRoom(pollID, msg)
 }
 
 func (h *Hub) BroadcastToRoom(pollID string, message []byte) {

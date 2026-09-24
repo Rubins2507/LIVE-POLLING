@@ -66,6 +66,28 @@ func (h *PollHandler) GetPollByID(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "Poll retrieved", poll)
 }
 
+func (h *PollHandler) UpdatePoll(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists {
+		utils.ErrorResponse(c, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	var req models.UpdatePollRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	poll, err := h.pollService.UpdatePoll(c.Request.Context(), c.Param("id"), userID.(string), req)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.SuccessResponse(c, http.StatusOK, "Poll updated successfully", poll)
+}
+
 func (h *PollHandler) GetPublicPoll(c *gin.Context) {
 	shareID := c.Param("shareId")
 	poll, err := h.pollService.GetPollByShareID(c.Request.Context(), shareID)

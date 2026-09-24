@@ -5,11 +5,10 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    base: process.env.VITE_BASE_PATH || '/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
-        '@': path.resolve(import.meta.dirname, '.'),
+        '@': path.resolve(__dirname, '.'),
       },
     },
     server: {
@@ -20,11 +19,11 @@ export default defineConfig(() => {
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
       proxy: {
         '/api': {
-          target: 'http://localhost:8080',
+          target: process.env.VITE_API_PROXY ?? 'http://localhost:8080',
           changeOrigin: true,
         },
         '/ws': {
-          target: 'ws://localhost:8080',
+          target: process.env.VITE_WS_PROXY ?? 'ws://localhost:8080',
           ws: true,
         },
       },

@@ -17,14 +17,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('livepoll_user');
-    return saved ? JSON.parse(saved) : {
-      id: 'usr_rubin',
-      name: 'Rubin S',
-      email: 'rubin@example.com',
-      createdAt: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString(),
-    };
+    return saved ? JSON.parse(saved) : null;
   });
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('livepoll_token') || 'demo_token');
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('livepoll_token'));
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -36,7 +31,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(profile);
           localStorage.setItem('livepoll_user', JSON.stringify(profile));
         } catch (e) {
-          console.warn('Session verification note: using local profile state');
+          setUser(null);
+          setToken(null);
+          localStorage.removeItem('livepoll_token');
+          localStorage.removeItem('livepoll_user');
         }
       }
       setLoading(false);

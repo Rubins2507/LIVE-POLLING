@@ -41,6 +41,7 @@ func SetupRoutes(
 			polls.POST("", middleware.AuthMiddleware(jwtSecret), pollHandler.CreatePoll)
 			polls.GET("", middleware.AuthMiddleware(jwtSecret), pollHandler.GetUserPolls)
 			polls.GET("/:id", pollHandler.GetPollByID)
+			polls.PUT("/:id", middleware.AuthMiddleware(jwtSecret), pollHandler.UpdatePoll)
 			polls.DELETE("/:id", middleware.AuthMiddleware(jwtSecret), pollHandler.DeletePoll)
 			polls.POST("/:id/close", middleware.AuthMiddleware(jwtSecret), pollHandler.ClosePoll)
 			polls.POST("/:id/reopen", middleware.AuthMiddleware(jwtSecret), pollHandler.ReopenPoll)

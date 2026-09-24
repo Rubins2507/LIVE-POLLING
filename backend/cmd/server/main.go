@@ -31,7 +31,7 @@ func main() {
 	// 1. Connect MongoDB
 	mongoDB, err := database.ConnectMongoDB(cfg.MongoDBURI)
 	if err != nil {
-		log.Fatalf("Failed to connect to MongoDB: %v", err)
+		log.Fatalf("MongoDB connection failed: %v", err)
 	}
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -42,7 +42,7 @@ func main() {
 	// 2. Connect Redis
 	redisClient, err := redis.ConnectRedis(cfg.RedisURL)
 	if err != nil {
-		log.Fatalf("Failed to connect to Redis: %v", err)
+		log.Fatalf("Redis connection failed: %v", err)
 	}
 	defer redisClient.Close()
 
